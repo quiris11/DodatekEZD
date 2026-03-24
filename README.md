@@ -7,7 +7,7 @@
 DodatekEZD realizuje te same główne zadania co EZD AddIn:
 
 - **Bezpośrednie edytowanie dokumentów w EZD** – otwieranie dokumentów z EZD, edycja w programie biurowym i zapis z powrotem do EZD bez konieczności ręcznego pobierania i wgrywania.
-- **Elektroniczne podpisywanie dokumentów** – integracja z lokalnie zainstalowanym serwerem podpisu (DSS) umożliwiającym składanie podpisu elektronicznego na dokumentach obsługiwanych przez EZD. DodatekEZD przy każdym uruchomieniu automatycznie sprawdza, czy serwer DSS działa i w razie potrzeby uruchamia go samodzielnie.
+- **Elektroniczne podpisywanie dokumentów** – integracja z lokalnie zainstalowanym serwerem podpisu [DSS WebApp](https://ec.europa.eu/digital-building-blocks/DSS/webapp-demo/) umożliwiającym składanie podpisu elektronicznego na dokumentach obsługiwanych przez EZD. DodatekEZD przy każdym uruchomieniu automatycznie sprawdza, czy serwer DSS WebApp działa i w razie potrzeby uruchamia go samodzielnie.
 
 ## Czego DodatekEZD nie robi?
 
@@ -148,4 +148,4 @@ W pliku `smart_card_config.toml` znajduje się również wpis:
 base_url = "http://localhost:8080/services/rest"
 ```
 
-Domyślnie DodatekEZD korzysta z serwera DSS zainstalowanego lokalnie na komputerze użytkownika. Można tu jednak podać adres serwera DSS działającego w sieci lokalnej – wówczas instalacja kontenera DSS na komputerze użytkownika nie jest konieczna.
+Domyślnie DodatekEZD korzysta z serwera [DSS WebApp](https://ec.europa.eu/digital-building-blocks/DSS/webapp-demo/) zainstalowanego lokalnie na komputerze użytkownika. Można tu jednak podać adres serwera DSS działającego w sieci lokalnej – wówczas instalacja kontenera DSS na komputerze użytkownika nie jest konieczna.
