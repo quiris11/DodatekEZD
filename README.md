@@ -21,8 +21,9 @@ Nie zaimplementowano funkcji:
 
 Skrypty instalacyjne wymagają następującej struktury katalogów – należy pobrać całe repozytorium, a nie tylko pojedynczy skrypt:
 
+```tree
 DodatekEZD/
-├── app/               ← pliki aplikacji (handler.py, smart_card_config.toml, …)
+├── app/
 ├── dss/
 │   └── Dockerfile
 ├── install/
@@ -31,6 +32,7 @@ DodatekEZD/
 └── uninstall/
     ├── uninstall_linux.sh
     └── uninstall_macos.sh
+```
 
 ---
 
