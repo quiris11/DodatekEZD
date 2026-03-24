@@ -22,14 +22,13 @@ import traceback
 import urllib.parse
 import zipfile
 
+from compare import compare
 from lxml import etree
 import pikepdf
 import zeep
 
 from addin_paths import addin_path, downloads_folder, log_file, python_x86
 from file_monitor import open_and_monitor
-
-COMPARE_SCRIPT = os.path.join(addin_path, 'comp/comp.applescript')
 
 
 def write_log(message):
@@ -747,17 +746,10 @@ if __name__ == "__main__":
                 with open(output_file2, "wb") as f:
                     f.write(file_data2)
 
-                if system == 'Darwin':
-                    result = subprocess.run(
-                        ['/usr/bin/osascript',
-                         COMPARE_SCRIPT,
-                         output_file,
-                         output_file2]
-                    )
-
-                elif system == 'Linux':
-                    raise NotImplementedError(
-                        'Brak obsługi porównywnywania zmian w plikach.')
+                if system == 'Darwin' or system == 'Linux':
+                    compare(
+                        output_file,
+                        output_file2)
                 else:
                     raise NotImplementedError(
                         f"System {system} nieobsługiwany.")
