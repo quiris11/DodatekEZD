@@ -9,6 +9,8 @@ DodatekEZD realizuje te same główne zadania co EZD AddIn:
 - **Bezpośrednie edytowanie dokumentów w EZD** – otwieranie dokumentów z EZD, edycja w programie biurowym i zapis z powrotem do EZD bez konieczności ręcznego pobierania i wgrywania.
 - **Elektroniczne podpisywanie dokumentów** – integracja z lokalnie zainstalowanym serwerem podpisu [DSS WebApp](https://ec.europa.eu/digital-building-blocks/DSS/webapp-demo/) umożliwiającym składanie podpisu elektronicznego na dokumentach obsługiwanych przez EZD. DodatekEZD przy każdym uruchomieniu automatycznie sprawdza, czy serwer DSS WebApp działa i w razie potrzeby uruchamia go samodzielnie.
 
+> **Ograniczenie:** Z uwagi na ograniczenia samego DSS WebApp, nie są obsługiwane **wielokrotne** podpisy XAdES w trybie *detached* (zewnętrzny) oraz XAdES w trybie *enveloping* (otaczający).
+
 ## Czego DodatekEZD nie robi?
 
 Nie zaimplementowano funkcji:
