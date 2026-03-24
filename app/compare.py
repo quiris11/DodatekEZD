@@ -3,7 +3,7 @@
 compare.py — Universal document & spreadsheet diff viewer
 Supported formats:
   Documents   : .txt .docx .odt .rtf .doc (and any format LibreOffice can open)
-  Spreadsheets: .xlsx .xls .ods
+  Spreadsheets: .xlsx .xls .ods .csv
 
 Usage:
   python compare.py file1 file2
@@ -25,7 +25,7 @@ import webbrowser
 
 # ── format groups ────────────────────────────────────────────────────────────
 
-SPREADSHEET_EXTS = {".xlsx", ".xls", ".ods"}
+SPREADSHEET_EXTS = {".xlsx", ".xls", ".ods", ".csv"}
 DOCUMENT_EXTS = {".txt", ".docx", ".odt", ".rtf", ".doc"}
 
 
@@ -187,33 +187,33 @@ def diff_section(rows1, rows2):
                 changed += 1
                 paras.append(
                     f'<p class="para modified" data-type="modified">'
-                    f'<span class="pill pill-mod">Modified</span>'
+                    f'<span class="pill pill-mod">Zmodyfikowane</span>'
                     f'{word_level_diff(a, b)}</p>')
             for k in range(len(pairs), i2 - i1):
                 deleted += 1
                 paras.append(
                     f'<p class="para deleted" data-type="deleted">'
-                    f'<span class="pill pill-del">Removed</span>'
+                    f'<span class="pill pill-del">Usunięte</span>'
                     f'{html_lib.escape(rows1[i1 + k])}</p>')
             for k in range(len(pairs), j2 - j1):
                 added += 1
                 paras.append(
                     f'<p class="para inserted" data-type="inserted">'
-                    f'<span class="pill pill-add">Added</span>'
+                    f'<span class="pill pill-add">Dodane</span>'
                     f'{html_lib.escape(rows2[j1 + k])}</p>')
         elif op == "delete":
             for line in rows1[i1:i2]:
                 deleted += 1
                 paras.append(
                     f'<p class="para deleted" data-type="deleted">'
-                    f'<span class="pill pill-del">Removed</span>'
+                    f'<span class="pill pill-del">Usunięte</span>'
                     f'{html_lib.escape(line)}</p>')
         elif op == "insert":
             for line in rows2[j1:j2]:
                 added += 1
                 paras.append(
                     f'<p class="para inserted" data-type="inserted">'
-                    f'<span class="pill pill-add">Added</span>'
+                    f'<span class="pill pill-add">Dodane</span>'
                     f'{html_lib.escape(line)}</p>')
 
     return paras, added, deleted, changed
@@ -273,15 +273,15 @@ def render_html(path1, path2, kind, sections, total_added, total_deleted,
     for key, status, paras, added, deleted, changed in sections:
         badge = ""
         if status == "new":
-            badge = '<span class="sheet-badge badge-new">New</span>'
+            badge = '<span class="sheet-badge badge-new">Nowe</span>'
         elif status == "removed":
-            badge = '<span class="sheet-badge badge-del">Removed</span>'
+            badge = '<span class="sheet-badge badge-del">Usunięte</span>'
 
         content = "".join(
             paras) if paras else '<p class="no-changes">No content.</p>'
         sub = (
-            f"{added} added &nbsp; {deleted} removed &nbsp; {changed} modified"
-            if (added or deleted or changed) else "No changes")
+            f"Dodane: {added}  &nbsp; Usunięte: {deleted} &nbsp; Zmodyfkowane: {changed} "
+            if (added or deleted or changed) else "Brak zmian")
 
         # For documents with a single "Document" section, skip the header
         show_header = not (kind == "document" and key == "Document")
@@ -299,10 +299,10 @@ def render_html(path1, path2, kind, sections, total_added, total_deleted,
 
     return f"""
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pl">
 <head>
 <meta charset="utf-8">
-<title>Comparison: {f1} vs {f2}</title>
+<title>Porównanie: {f1} vs {f2}</title>
 <style>
   *, *::before, *::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
   body {{
@@ -311,7 +311,7 @@ def render_html(path1, path2, kind, sections, total_added, total_deleted,
     color: #1a1a1a; min-height: 100vh; padding: 2rem 1rem;
   }}
   .toolbar {{
-    max-width: 860px; margin: 0 auto 1.5rem;
+    max-width: 1100px; margin: 0 auto 1.5rem;
     background: #fff; border: 1px solid #ddd; border-radius: 10px;
     padding: .75rem 1.25rem;
     display: flex; align-items: center; justify-content: space-between;
@@ -344,7 +344,7 @@ def render_html(path1, path2, kind, sections, total_added, total_deleted,
   }}
   .nav-btns button:hover {{ background: #e4e2de; }}
   .document {{
-    max-width: 860px; margin: 0 auto;
+    max-width: 1100px; margin: 0 auto;
     background: #fff; border: 1px solid #ddd; border-radius: 10px;
     overflow: hidden;
   }}
@@ -410,14 +410,14 @@ def render_html(path1, path2, kind, sections, total_added, total_deleted,
     <strong>{f2}</strong><span class="ext-badge">{ext2}</span>
   </div>
   <div class="stats">
-    <span class="stat stat-all" onclick="filter('all')">All &nbsp;{total}</span>
-    <span class="stat stat-add" onclick="filter('inserted')">Added &nbsp;{total_added}</span>
-    <span class="stat stat-del" onclick="filter('deleted')">Removed &nbsp;{total_deleted}</span>
-    <span class="stat stat-mod" onclick="filter('modified')">Modified &nbsp;{total_changed}</span>
+    <span class="stat stat-all" onclick="filter('all')">Wszystkie &nbsp;{total}</span>
+    <span class="stat stat-add" onclick="filter('inserted')">Dodane &nbsp;{total_added}</span>
+    <span class="stat stat-del" onclick="filter('deleted')">Usunięte &nbsp;{total_deleted}</span>
+    <span class="stat stat-mod" onclick="filter('modified')">Zmodyfikowane &nbsp;{total_changed}</span>
   </div>
   <div class="nav-btns">
-    <button onclick="jump(-1)">&#8593; Prev</button>
-    <button onclick="jump(1)">&#8595; Next</button>
+    <button onclick="jump(-1)">&#8593; Poprzednie</button>
+    <button onclick="jump(1)">&#8595; Następne</button>
   </div>
 </div>
 
