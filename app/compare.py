@@ -476,7 +476,7 @@ def render_html(path1, path2, kind, sections, total_added, total_deleted,
 
 # ── entry point ──────────────────────────────────────────────────────────────
 
-def compare(path1, path2, output=None):
+def compare(path1, path2):
     t1 = file_type(path1)
     t2 = file_type(path2)
 
@@ -500,19 +500,6 @@ def compare(path1, path2, output=None):
     html = render_html(path1, path2, kind, sections,
                        total_added, total_deleted, total_changed)
 
-    if output is None:
-        b1 = os.path.splitext(os.path.basename(path1))[0]
-        b2 = os.path.splitext(os.path.basename(path2))[0]
-        output = f"diff_{b1}_vs_{b2}.html"
-
-    # with open(output, "w", encoding="utf-8") as f:
-    #     f.write(html)
-
-    # print(f"\nSaved : {output}")
-    # print(f"Changes: +{total_added} added  -{total_deleted} removed"
-    #       f"  ~{total_changed} modified")
-    # print(f"Open  : file://{os.path.abspath(output)}")
-
     tmp = tempfile.NamedTemporaryFile(
         delete=False, suffix=".html", mode="w", encoding="utf-8")
     tmp.write(html)
@@ -534,8 +521,5 @@ if __name__ == "__main__":
     )
     parser.add_argument("file1", help="Original file")
     parser.add_argument("file2", help="Modified file")
-    parser.add_argument(
-        "-o", "--output", default=None,
-        help="Output HTML path (default: diff_<file1>_vs_<file2>.html)")
     args = parser.parse_args()
-    compare(args.file1, args.file2, args.output)
+    compare(args.file1, args.file2)
