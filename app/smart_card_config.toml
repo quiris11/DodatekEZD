@@ -1,0 +1,17 @@
+base_url = "http://localhost:8080/services/rest"
+
+[libraries]
+Darwin = [
+    "/Applications/Sigillum Manager.app/Contents/lib/sigillum-pkcs11-64.dylib",
+    "/Applications/e-dowód.app/Contents/lib/e-dowod-pkcs11-64.dylib",
+]
+Linux = [
+    "/opt/sigillum-manager/sigillum-pkcs11-64.so",
+    "/opt/e-dowod/e-dowod-pkcs11-64.so",
+]
+
+[smartcard]
+label_patterns = [
+    "Sigillum (PIN Qualified) #",
+    "E-Dowód (Authorization) #",
+]
