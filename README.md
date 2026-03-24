@@ -140,7 +140,7 @@ Listę dostępnych tokenów i ich etykiet wyświetlisz poleceniem:
 pkcs11-tool --module /ścieżka/do/biblioteki.so --list-token-slots
 ```
 
-### Adres serwera DSS
+## Adres serwera DSS
 
 W pliku `smart_card_config.toml` znajduje się również wpis:
 
