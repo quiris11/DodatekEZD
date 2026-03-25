@@ -43,13 +43,137 @@ def read_txt(path):
         return [line.strip() for line in f if line.strip()]
 
 
+def _docx_para_text(para_elem, qn):
+    """
+    Extract text from a w:p XML element, including legacy form-field values.
+
+    * Regular text and text/dropdown fields: collected from w:t elements.
+      The current value of a FORMTEXT / FORMDROPDOWN field is stored in the
+      run(s) between <w:fldChar type="separate"/> and <w:fldChar type="end"/>
+      as ordinary w:t nodes, so they are picked up automatically.
+    * Checkbox fields (FORMCHECKBOX): no w:t is ever emitted; the checked
+      state lives in <w:ffData>/<w:checkBox>/<w:checked> (or <w:default>).
+      We emit "[x]" / "[ ]" so that a state change is visible in the diff.
+    * w:instrText (e.g. " FORMTEXT ") is silently skipped; it is not a w:t
+      element and would never be collected, but the guard makes intent clear.
+    """
+    parts = []
+    for elem in para_elem.iter():
+        tag = elem.tag
+        if tag == qn('w:ffData'):
+            checkbox = elem.find(qn('w:checkBox'))
+            if checkbox is not None:
+                for state_elem in (checkbox.find(qn('w:checked')),
+                                   checkbox.find(qn('w:default'))):
+                    if state_elem is not None:
+                        val = state_elem.get(qn('w:val'), '1')
+                        parts.append('[x]' if val not in ('0', 'false') else '[ ]')
+                        break
+                else:
+                    parts.append('[ ]')
+        elif tag == qn('w:instrText'):
+            pass  # skip field codes like " FORMTEXT ", " FORMDROPDOWN "
+        elif tag == qn('w:t'):
+            parts.append(elem.text or '')
+    return ''.join(parts)
+
+
+def _walk_docx_table(tbl_elem, lines, qn):
+    """Walk a w:tbl element, recursing into each cell via _walk_docx_body."""
+    for tr in tbl_elem:
+        if tr.tag == qn('w:tr'):
+            for tc in tr:
+                if tc.tag == qn('w:tc'):
+                    _walk_docx_body(tc, lines, qn)
+
+
+def _walk_docx_body(element, lines, qn):
+    """
+    Walk a body / table-cell / sdtContent element and collect text lines from:
+      - w:p  direct children           (regular paragraphs + inline form fields)
+      - w:tbl > w:tr > w:tc            (table cell paragraphs, nested tables)
+      - w:sdt > w:sdtContent           (block-level content controls / SDTs)
+
+    doc.paragraphs only returns direct w:p children of w:body and therefore
+    misses paragraphs inside tables and inside block-level content controls.
+    """
+    for child in element:
+        tag = child.tag
+        if tag == qn('w:p'):
+            text = _docx_para_text(child, qn)
+            if text.strip():
+                lines.append(text)
+        elif tag == qn('w:tbl'):
+            _walk_docx_table(child, lines, qn)
+        elif tag == qn('w:sdt'):
+            sdt_content = child.find(qn('w:sdtContent'))
+            if sdt_content is not None:
+                _walk_docx_body(sdt_content, lines, qn)
+
+
 def read_docx(path):
     try:
         from docx import Document
+        from docx.oxml.ns import qn
     except ImportError:
         sys.exit("python-docx not installed.  Run: pip install python-docx")
     doc = Document(path)
-    return [p.text for p in doc.paragraphs if p.text.strip()]
+    lines = []
+    _walk_docx_body(doc.element.body, lines, qn)
+    return lines
+
+
+def _extract_odt_form_fields(doc, lines):
+    """
+    Append form-control values from an ODT document to *lines*.
+
+    ODT form controls (form:checkbox, form:text, form:textarea, form:listbox)
+    are stored under <office:forms> in the body and do NOT produce text
+    paragraph elements, so getElementsByType(P) misses them entirely.
+
+    Emitted format:  "[FORM:<label>] <value>"  — makes field changes visible.
+    """
+    FORM_NS = 'urn:oasis:names:tc:opendocument:xmlns:form:1.0'
+
+    def iter_nodes(node):
+        for child in node.childNodes:
+            yield child
+            yield from iter_nodes(child)
+
+    for elem in iter_nodes(doc.body):
+        try:
+            ns, local = elem.qname
+        except (AttributeError, ValueError, TypeError):
+            continue
+        if ns != FORM_NS:
+            continue
+
+        label = (elem.getAttribute((FORM_NS, 'label')) or
+                 elem.getAttribute((FORM_NS, 'name')) or local)
+
+        if local == 'checkbox':
+            state = (elem.getAttribute((FORM_NS, 'current-state')) or
+                     elem.getAttribute((FORM_NS, 'state')) or 'unchecked')
+            lines.append(f'[FORM:{label}] {"[x]" if state == "checked" else "[ ]"}')
+
+        elif local in ('text', 'textarea'):
+            value = (elem.getAttribute((FORM_NS, 'current-value')) or
+                     elem.getAttribute((FORM_NS, 'value')) or '')
+            if value:
+                lines.append(f'[FORM:{label}] {value}')
+
+        elif local == 'listbox':
+            for child in elem.childNodes:
+                try:
+                    cns, clocal = child.qname
+                except (AttributeError, ValueError, TypeError):
+                    continue
+                if clocal == 'option' and cns == FORM_NS:
+                    if child.getAttribute((FORM_NS, 'current-selected')) == 'true':
+                        val = (child.getAttribute((FORM_NS, 'label')) or
+                               child.getAttribute((FORM_NS, 'value')) or '')
+                        if val:
+                            lines.append(f'[FORM:{label}] {val}')
 
 
 def read_odt(path):
@@ -59,7 +183,9 @@ def read_odt(path):
     except ImportError:
         sys.exit("odfpy not installed.  Run: pip install odfpy")
     doc = load(path)
-    return [str(p) for p in doc.getElementsByType(P) if str(p).strip()]
+    lines = [str(p) for p in doc.getElementsByType(P) if str(p).strip()]
+    _extract_odt_form_fields(doc, lines)
+    return lines
 
 
 def read_rtf(path):
