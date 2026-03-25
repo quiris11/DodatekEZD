@@ -77,15 +77,16 @@ def read_docx(path):
                 ff_data = fld_char.find(qn('w:ffData'))
                 if ff_data is not None:
                     checkbox = ff_data.find(qn('w:checkBox'))
-                    ddlist   = ff_data.find(qn('w:ddList'))
+                    ddlist = ff_data.find(qn('w:ddList'))
                     if checkbox is not None:
                         checked = checkbox.find(qn('w:checked'))
                         val = (checked.get(qn('w:val'), '1')
                                if checked is not None else '0')
-                        parts.append('[x]' if val not in ('0', 'false') else '[ ]')
+                        parts.append('[x]' if val not in (
+                            '0', 'false') else '[ ]')
                     elif ddlist is not None:
                         result_e = ddlist.find(qn('w:result'))
-                        entries  = ddlist.findall(qn('w:listEntry'))
+                        entries = ddlist.findall(qn('w:listEntry'))
                         try:
                             idx = int(result_e.get(qn('w:val'), 0)
                                       if result_e is not None else 0)
