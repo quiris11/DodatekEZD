@@ -4,6 +4,9 @@ COPY dss-demo-bundle-6.3.zip /opt/
 RUN apt-get update && apt-get install -y unzip nano \
     && unzip /opt/dss-demo-bundle-6.3.zip -d /opt/ \
     && rm /opt/dss-demo-bundle-6.3.zip \
+    && unzip /opt/dss-demo-bundle-6.3/apache-tomcat-11.0.9/webapps/ROOT.war \
+         -d /opt/dss-demo-bundle-6.3/apache-tomcat-11.0.9/webapps/ROOT/ \
+    && rm /opt/dss-demo-bundle-6.3/apache-tomcat-11.0.9/webapps/ROOT.war \
     && chmod +x /opt/dss-demo-bundle-6.3/apache-tomcat-11.0.9/bin/catalina.sh
 
 COPY tsp-config.xml* /opt/dss-demo-bundle-6.3/apache-tomcat-11.0.9/webapps/ROOT/WEB-INF/classes/config/
