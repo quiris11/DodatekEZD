@@ -155,29 +155,25 @@ Domyślnie DodatekEZD korzysta z serwera [DSS WebApp](https://ec.europa.eu/digit
 
 ## Własna konfiguracja znacznika czasu (TSP)
 
-DSS WebApp domyślnie korzysta z wbudowanego, niekwalifikowanego źródła znacznika czasu. Jeśli korzystasz z innego serwera TSP (ang. *Time Stamp Protocol*), możesz podmienić tę konfigurację bezpośrednio w działającym kontenerze.
+DSS WebApp domyślnie korzysta z wbudowanego, niekwalifikowanego źródła znacznika czasu. Jeśli korzystasz z innego serwera TSP (ang. *Time Stamp Protocol*), możesz podmienić tę konfigurację na dwa sposoby.
 
-Plik do edycji:
+### Automatyczna konfiguracja podczas instalacji
 
-```
-/opt/dss-demo-bundle-6.3/apache-tomcat-11.0.9/webapps/ROOT/WEB-INF/classes/config/tsp-config.xml
-```
+Jeśli przed uruchomieniem instalatora umieścisz plik `tsp-config.xml` w folderze `~/Downloads`, zostanie on automatycznie skopiowany do obrazu kontenera. Nie są potrzebne żadne dodatkowe kroki.
 
-Aby edytować go w kontenerze:
+### Ręczna konfiguracja w działającym kontenerze
+
+Jeśli chcesz zmienić konfigurację TSP po instalacji, możesz edytować plik bezpośrednio w kontenerze:
 
 ```bash
 podman exec -it dss bash
-vi /opt/dss-demo-bundle-6.3/apache-tomcat-11.0.9/webapps/ROOT/WEB-INF/classes/config/tsp-config.xml
+nano /opt/dss-demo-bundle-6.3/apache-tomcat-11.0.9/webapps/ROOT/WEB-INF/classes/config/tsp-config.xml
 ```
 
-Zakomentuj lub usuń istniejącą zawartość i wstaw własną konfigurację wskazującą na inny serwer TSP. Po zapisaniu zmian zrestartuj kontener:
+Zakomentuj lub usuń istniejącą zawartość i wstaw własną konfigurację wskazującą na wybrany serwer TSP. Po zapisaniu zmian zrestartuj kontener:
 
 ```bash
 podman restart dss
 ```
 
-> **Uwaga:** Zmiany wprowadzone bezpośrednio w kontenerze nie są trwałe — zostaną utracone po jego usunięciu i ponownym uruchomieniu (`podman rm`). Jeśli chcesz, żeby konfiguracja była trwała, umieść zmodyfikowany `tsp-config.xml` obok `Dockerfile` i dodaj do tego pliku  linię:
-> ```dockerfile
-> COPY tsp-config.xml /opt/dss-demo-bundle-6.3/apache-tomcat-11.0.9/webapps/ROOT/WEB-INF/classes/config/tsp-config.xml
-> ```
-> Następnie przebuduj obraz (`podman build`) i uruchom kontener ponownie.
+> **Uwaga:** Zmiany wprowadzone bezpośrednio w kontenerze nie są trwałe — zostaną utracone po jego usunięciu i ponownym uruchomieniu (`podman rm`). Aby utrwalić konfigurację, umieść `tsp-config.xml` w `~/Downloads` i uruchom instalator ponownie.
