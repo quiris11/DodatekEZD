@@ -1,10 +1,12 @@
 FROM docker.io/eclipse-temurin:25-jdk-jammy
 
 COPY dss-demo-bundle-6.3.zip /opt/
-RUN apt-get update && apt-get install -y unzip \
+RUN apt-get update && apt-get install -y unzip nano \
     && unzip /opt/dss-demo-bundle-6.3.zip -d /opt/ \
     && rm /opt/dss-demo-bundle-6.3.zip \
     && chmod +x /opt/dss-demo-bundle-6.3/apache-tomcat-11.0.9/bin/catalina.sh
+
+COPY tsp-config.xml* /opt/dss-demo-bundle-6.3/apache-tomcat-11.0.9/webapps/ROOT/WEB-INF/classes/config/
 
 EXPOSE 8080
 

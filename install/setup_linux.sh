@@ -95,6 +95,12 @@ fi
 echo "[6/7] Installing DSS to $DSS_APP_DIR and building container image..."
 mkdir -p "$DSS_APP_DIR"
 cp "$DSS_ZIP_CACHE" "$DSS_APP_DIR/"
+
+TSP_CONFIG="$HOME/Downloads/tsp-config.xml"
+if [ -f "$TSP_CONFIG" ]; then
+    cp "$TSP_CONFIG" "$DSS_APP_DIR/"
+fi
+
 cp "$SCRIPT_DIR/../dss/Dockerfile" "$DSS_APP_DIR/"
 echo "      ✓ Files installed to $DSS_APP_DIR"
 
