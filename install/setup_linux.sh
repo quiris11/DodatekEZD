@@ -49,7 +49,7 @@ python3 -m venv --system-site-packages "$VENV_DIR"
 
 source "$VENV_DIR/bin/activate"
 pip install --upgrade pip
-pip install pikepdf zeep python-pkcs11 watchdog cryptography
+pip install pikepdf zeep python-pkcs11 watchdog cryptography python-docx odfpy striprtf pandas openpyxl xlrd
 deactivate
 echo "      ✓ Packages installed."
 
