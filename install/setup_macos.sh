@@ -150,6 +150,8 @@ cp "$DSS_ZIP_CACHE" "$DSS_APP_DIR/"
 TSP_CONFIG="$HOME/Downloads/tsp-config.xml"
 if [ -f "$TSP_CONFIG" ]; then
     cp "$TSP_CONFIG" "$DSS_APP_DIR/"
+else
+    touch "$DSS_APP_DIR/tsp-config.xml.placeholder"
 fi
 
 cp "$SCRIPT_DIR/../dss/Dockerfile" "$DSS_APP_DIR/"
