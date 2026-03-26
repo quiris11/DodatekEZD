@@ -107,9 +107,8 @@ with open(plist_path, "rb") as f:
     plist = plistlib.load(f)
 plist["CFBundleName"]               = "DodatekEZD"
 plist["CFBundleDisplayName"]        = "DodatekEZD"
-plist["CFBundleIdentifier"]         = "com.apple.ScriptEditor.id.DodatekEZD"
+plist["CFBundleIdentifier"]         = "pl.dodatekEZD.handler"
 plist["CFBundleSignature"]          = "aplt"
-plist["LSRequiresCarbon"]           = True
 plist["LSUIElement"]                = False
 plist["OSAAppletShowStartupScreen"] = False
 plist["CFBundleURLTypes"] = [{
