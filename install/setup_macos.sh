@@ -147,11 +147,16 @@ echo "[6/7] Installing DSS to $DSS_APP_DIR and building container image..."
 mkdir -p "$DSS_APP_DIR"
 cp "$DSS_ZIP_CACHE" "$DSS_APP_DIR/"
 
+# Clean up previous TSP config to avoid stale placeholder/file coexistence
+rm -f "$DSS_APP_DIR/tsp-config.xml" "$DSS_APP_DIR/tsp-config.xml.placeholder"
+
 TSP_CONFIG="$HOME/Downloads/tsp-config.xml"
 if [ -f "$TSP_CONFIG" ]; then
     cp "$TSP_CONFIG" "$DSS_APP_DIR/"
+    echo "      ✓ TSP config found – will be included in image."
 else
     touch "$DSS_APP_DIR/tsp-config.xml.placeholder"
+    echo "      ✓ No TSP config found – using DSS default."
 fi
 
 cp "$SCRIPT_DIR/../dss/Dockerfile" "$DSS_APP_DIR/"
@@ -169,8 +174,15 @@ if ! podman info &>/dev/null; then
 fi
 echo "      ✓ Podman machine running."
 
+# Remove previous image to avoid accumulating untagged layers
+podman rmi "dss:${DSS_VERSION}" 2>/dev/null || true
+
 podman build -t "dss:${DSS_VERSION}" "$DSS_APP_DIR"
 echo "      ✓ Image dss:${DSS_VERSION} built."
+
+# Remove ZIP from build context – no longer needed
+rm -f "$DSS_APP_DIR/dss-demo-bundle-${DSS_VERSION}.zip"
+echo "      ✓ Build context cleaned up."
 
 # ── Step 7: Run DSS container ─────────────────────────────────────────────────
 echo "[7/7] Starting DSS container..."
@@ -181,5 +193,3 @@ echo "      ✓ Container 'dss' running on http://localhost:8080"
 echo ""
 echo "✓ Setup complete!"
 echo ""
-echo "To activate the environment manually, run:"
-echo "  source $VENV_DIR/bin/activate"
