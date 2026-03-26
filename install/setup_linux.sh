@@ -11,6 +11,7 @@ SOURCE_DIR="$SCRIPT_DIR/../app"
 DESKTOP_FILE="$HOME/.local/share/applications/ezd-handler.desktop"
 DSS_VERSION="6.3"
 DSS_ZIP_URL="https://ec.europa.eu/cefdigital/artifact/repository/esignaturedss/eu/europa/ec/joinup/sd-dss/dss-demo-bundle/${DSS_VERSION}/dss-demo-bundle-${DSS_VERSION}.zip"
+DOWNLOADS_DIR="$(xdg-user-dir DOWNLOAD 2>/dev/null || echo "$HOME/Downloads")"
 
 echo "=== DodatekEZD Setup for Linux ==="
 
@@ -74,9 +75,10 @@ xdg-mime default ezd-handler.desktop x-scheme-handler/ezd
 update-desktop-database "$HOME/.local/share/applications" 2>/dev/null || true
 echo "      ✓ ezd:// handler registered."
 
-# ── Step 5: Download DSS bundle ZIP to ~/Downloads ────────────────────────────
+# ── Step 5: Download DSS bundle ZIP to Downloads folder ───────────────────────
 echo "[5/7] Downloading DSS demo bundle..."
-DSS_ZIP_CACHE="$HOME/Downloads/dss-demo-bundle-${DSS_VERSION}.zip"
+mkdir -p "$DOWNLOADS_DIR"
+DSS_ZIP_CACHE="$DOWNLOADS_DIR/dss-demo-bundle-${DSS_VERSION}.zip"
 
 if [ -f "$DSS_ZIP_CACHE" ]; then
     echo "      ✓ Already downloaded: $DSS_ZIP_CACHE – skipping."
@@ -96,19 +98,34 @@ echo "[6/7] Installing DSS to $DSS_APP_DIR and building container image..."
 mkdir -p "$DSS_APP_DIR"
 cp "$DSS_ZIP_CACHE" "$DSS_APP_DIR/"
 
-TSP_CONFIG="$HOME/Downloads/tsp-config.xml"
+# Clean up previous TSP config to avoid stale placeholder/file coexistence
+rm -f "$DSS_APP_DIR/tsp-config.xml" "$DSS_APP_DIR/tsp-config.xml.placeholder"
+
+TSP_CONFIG="$DOWNLOADS_DIR/tsp-config.xml"
 if [ -f "$TSP_CONFIG" ]; then
     cp "$TSP_CONFIG" "$DSS_APP_DIR/"
+    echo "      ✓ TSP config found – will be included in image."
+else
+    touch "$DSS_APP_DIR/tsp-config.xml.placeholder"
+    echo "      ✓ No TSP config found – using DSS default."
 fi
 
 cp "$SCRIPT_DIR/../dss/Dockerfile" "$DSS_APP_DIR/"
 echo "      ✓ Files installed to $DSS_APP_DIR"
 
+# Remove previous image to avoid accumulating untagged layers
+podman rmi "dss:${DSS_VERSION}" 2>/dev/null || true
+
 podman build -t "dss:${DSS_VERSION}" "$DSS_APP_DIR"
 echo "      ✓ Image dss:${DSS_VERSION} built."
 
+# Remove ZIP from build context – no longer needed
+rm -f "$DSS_APP_DIR/dss-demo-bundle-${DSS_VERSION}.zip"
+echo "      ✓ Build context cleaned up."
+
 # ── Step 7: Run DSS container ─────────────────────────────────────────────────
 echo "[7/7] Starting DSS container..."
+podman rm -f dss 2>/dev/null || true
 podman run -d -p 8080:8080 --name dss "dss:${DSS_VERSION}"
 echo "      ✓ Container 'dss' running on http://localhost:8080"
 
