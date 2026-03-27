@@ -354,7 +354,7 @@ def decode_ezd_url(url):
 
         token = parts[0]
         encoded_url = parts[1]
-        token2 = parts[-1] if len(parts) > 2 else None
+        token2 = parts[2] if len(parts) > 2 else None
 
         try:
             host = base64.b64decode(encoded_url).decode('utf-8')
