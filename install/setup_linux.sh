@@ -15,16 +15,14 @@ DOWNLOADS_DIR="$(xdg-user-dir DOWNLOAD 2>/dev/null || echo "$HOME/Downloads")"
 
 echo "=== DodatekEZD Setup for Linux ==="
 
-# ── Step 1: Detect distro and install python3-tk ──────────────────────────────
+# ── Step 1: Detect distro and install dependencies ────────────────────────────
 if command -v apt &>/dev/null; then
-    echo "[1/7] Detected Debian/Ubuntu – installing python3-tk via apt..."
+    echo "[1/7] Detected Debian/Ubuntu – installing dependencies via apt..."
     sudo apt update -qq
     sudo apt install -y python3-tk python3-venv unzip podman
-
 elif command -v dnf &>/dev/null; then
-    echo "[1/7] Detected Fedora/RHEL – installing python3-tkinter via dnf..."
-    sudo dnf install -y python3-tkinter python3-virtualenv unzip podman
-
+    echo "[1/7] Detected Fedora/RHEL – installing dependencies via dnf..."
+    sudo dnf install -y python3-tkinter unzip podman
 else
     echo "ERROR: Unsupported package manager. Install python3-tk manually, then re-run."
     exit 1
