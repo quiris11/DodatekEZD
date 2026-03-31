@@ -355,12 +355,13 @@ def decode_ezd_url(url):
         token = parts[0]
         encoded_url = parts[1]
         token2 = parts[2] if len(parts) > 2 else None
+        token3 = parts[3] if len(parts) > 3 else None
 
         try:
             host = base64.b64decode(encoded_url).decode('utf-8')
         except Exception as e:
             raise ValueError("Invalid Base64 encoding") from e
-        return host, token, token2
+        return host, token, token2, token3
 
 
 def handle_url(url):
@@ -701,7 +702,7 @@ if __name__ == "__main__":
         os.makedirs(downloads_folder, exist_ok=True)
 
         if len(sys.argv) > 1 and is_dss_started:
-            host, token, token2 = decode_ezd_url(sys.argv[1])
+            host, token, token2, token3 = decode_ezd_url(sys.argv[1])
 
             if len(sys.argv) > 2:
                 PIN = sys.argv[2]
@@ -732,7 +733,7 @@ if __name__ == "__main__":
                         removed = remove_empty_rels_files(output_file)
                     upload_file(output_file, host, token)
 
-            else:
+            elif token2 == '' and token3 is not None:
                 file_data, file_name = get_file(token, host)
 
                 output_file = os.path.join(
@@ -740,7 +741,7 @@ if __name__ == "__main__":
                 with open(output_file, "wb") as f:
                     f.write(file_data)
 
-                file_data2, file_name2 = get_file(token2, host)
+                file_data2, file_name2 = get_file(token3, host)
                 output_file2 = os.path.join(
                     handler_path, '[NEW] ' + file_name2)
                 with open(output_file2, "wb") as f:
