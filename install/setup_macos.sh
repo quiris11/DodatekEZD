@@ -162,6 +162,9 @@ fi
 cp "$SCRIPT_DIR/../dss/Dockerfile" "$DSS_APP_DIR/"
 echo "      ✓ Files installed to $DSS_APP_DIR"
 
+# Remove previous image to avoid accumulating untagged layers
+podman rmi "dss:${DSS_VERSION}" 2>/dev/null || true
+
 # Ensure Podman machine is initialized and running
 if ! podman machine list --format '{{.Name}}' 2>/dev/null | grep -q .; then
     echo "      Initializing Podman machine..."
@@ -173,9 +176,6 @@ if ! podman info &>/dev/null; then
     podman machine start || true
 fi
 echo "      ✓ Podman machine running."
-
-# Remove previous image to avoid accumulating untagged layers
-podman rmi "dss:${DSS_VERSION}" 2>/dev/null || true
 
 podman build -t "dss:${DSS_VERSION}" "$DSS_APP_DIR"
 echo "      ✓ Image dss:${DSS_VERSION} built."
