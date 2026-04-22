@@ -107,7 +107,7 @@ def _show_confirmation_dialog(filepath=""):
     t = tk.Frame(m, bg="#f8f9fa")
     t.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
     tk.Label(
-        t, text="Potwierdź zapisanie zapisanie zmian w pliku", 
+        t, text="Potwierdź zapisanie zmian w pliku", 
         font=("TkDefaultFont", 10, "bold"),
         bg="#f8f9fa", fg="#212529", wraplength=400,
         anchor=tk.CENTER, justify=tk.CENTER).pack(expand=True)
