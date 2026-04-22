@@ -13,7 +13,7 @@ __all__ = [
     'get_file_hash',
 ]
 
-__version__ = '1.2.0'
+__version__ = '1.3.0'
 
 
 def remove_quarantine(filepath):
@@ -62,23 +62,19 @@ def _show_confirmation_dialog(filepath=""):
     d.attributes('-topmost', True)
     d.configure(bg="#f8f9fa")
     
-    W, H, M = 520, 170, 16
-    d.geometry(f"{W}x{H}+{M}+{sh-H-M-48}")
-    
     f = tk.Frame(d, bg="#f8f9fa")
     f.pack(fill=tk.BOTH, expand=True, padx=14, pady=10)
     
-    b = tk.Frame(f, bg="#f8f9fa", height=34)
-    b.pack(fill=tk.X, side=tk.BOTTOM, pady=(8, 0))
-    b.pack_propagate(False)
+    b = tk.Frame(f, bg="#f8f9fa")
+    b.pack(fill=tk.X, side=tk.BOTTOM, pady=(10, 0))
     c = tk.Frame(b, bg="#f8f9fa")
     c.pack(side=tk.RIGHT)
     
     def btn(p, t, bg, h, fg, cmd, bold=False):
         x = tk.Label(
-                p, text=t, 
-                font=("TkDefaultFont", 9, "bold" if bold else "normal"),
-                bg=bg, fg=fg, padx=12, pady=3, cursor="hand2")
+            p, text=t, 
+            font=("TkDefaultFont", 9, "bold" if bold else "normal"),
+            bg=bg, fg=fg, padx=12, pady=4, cursor="hand2")
         x.pack(side=tk.LEFT, padx=(0, 6))
         x.bind("<Enter>", lambda e: x.config(bg=h))
         x.bind("<Leave>", lambda e: x.config(bg=bg))
@@ -90,34 +86,38 @@ def _show_confirmation_dialog(filepath=""):
         d.destroy()
         root.destroy()
     
-    def yes(): 
+    def yes():
         confirmed[0] = True
         d.destroy()
         root.destroy()
     
     btn(c, "Anuluj", "#e9ecef", "#dee2e6", "#212529", no)
-    btn(c, "Potwierdzam", "#0d6efd", "#0b5ed7", "white", yes, bold=True).focus_set()  # noqa
+    btn(c, "Potwierdzam", "#0d6efd", "#0b5ed7", "white", yes, bold=True).focus_set()
     
     m = tk.Frame(f, bg="#f8f9fa")
     m.pack(fill=tk.BOTH, expand=True)
     tk.Label(
-        m, text="📝", 
-        font=("TkDefaultFont", 24), 
-        bg="#f8f9fa").pack(side=tk.LEFT, padx=(0, 8))
+        m, text="📝", font=("TkDefaultFont", 24), 
+        bg="#f8f9fa").pack(side=tk.LEFT, padx=(0, 10))
     t = tk.Frame(m, bg="#f8f9fa")
     t.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-    tk.Label(
-        t, text="Potwierdź zapisanie zmian w pliku", 
-        font=("TkDefaultFont", 10, "bold"),
-        bg="#f8f9fa", fg="#212529", wraplength=400,
-        anchor=tk.CENTER, justify=tk.CENTER).pack(expand=True)
+    tk.Label(t, text="Potwierdź zapisanie zmian w pliku", 
+             font=("TkDefaultFont", 10, "bold"),
+             bg="#f8f9fa", fg="#212529", wraplength=360,
+             anchor=tk.CENTER, justify=tk.CENTER).pack(expand=True)
     
     d.protocol("WM_DELETE_WINDOW", no)
     d.bind('<Return>', lambda e: yes())
     d.bind('<Escape>', lambda e: no())
+    
     d.update_idletasks()
+    W = max(d.winfo_reqwidth(), 340)
+    H = d.winfo_reqheight()
+    d.geometry(f"{W}x{H}+16+{sh-H-16-48}")
+    d.minsize(W, H)
     d.grab_set()
     d.focus_set()
+    
     root.mainloop()
     return confirmed[0]
 
