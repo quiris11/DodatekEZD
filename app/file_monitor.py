@@ -3,7 +3,7 @@ import platform
 import os
 import hashlib
 import tkinter as tk
-from tkinter import ttk
+
 
 READONLY_EXTENSIONS = ('.eml', '.msg', '.pdf')
 
@@ -28,8 +28,7 @@ def remove_quarantine(filepath):
         )
 
         if 'com.apple.quarantine' in result.stdout:
-            print(f"Removing quarantine attribute from: {os.path.basename(
-                filepath)}")
+            print(f"Removing quarantine attribute from: {os.path.basename(filepath)}")  # noqa
             subprocess.run(
                 ['xattr', '-d', 'com.apple.quarantine', filepath],
                 check=True,
@@ -50,65 +49,76 @@ def get_file_hash(filepath):
         return None
 
 
-def _show_confirmation_dialog():
+def _show_confirmation_dialog(filepath=""):
     confirmed = [False]
-
     root = tk.Tk()
     root.withdraw()
-
-    dialog = tk.Toplevel(root)
-    dialog.title("DodatekEZD – Potwierdzenie")
-    dialog.resizable(False, False)
-    dialog.grab_set()
-    dialog.attributes('-topmost', True)
-
-    width, height = 300, 110
-    # screen_w = dialog.winfo_screenwidth()
-    screen_h = dialog.winfo_screenheight()
-    margin = 16
-    x = margin
-    y = screen_h - height - margin - 48
-    dialog.geometry(f"{width}x{height}+{x}+{y}")
-
-    frame = ttk.Frame(dialog, padding=(14, 10, 14, 12))
-    frame.pack(fill=tk.BOTH, expand=True)
-
-    label = ttk.Label(
-        frame,
-        text="Potwierdź, że zakończyłeś edycję pliku\ni chcesz przesłać zmiany?",
-        justify=tk.CENTER,
-        wraplength=268,
-        font=("TkDefaultFont", 9),
-    )
-    label.pack(pady=(0, 10))
-
-    btn_frame = ttk.Frame(frame)
-    btn_frame.pack()
-
-    def on_confirm():
-        confirmed[0] = True
-        dialog.destroy()
-        root.destroy()
-
-    def on_cancel():
+    root.update_idletasks()
+    sh = root.winfo_screenheight()
+    
+    d = tk.Toplevel(root)
+    d.title("DodatekEZD")
+    d.resizable(False, False)
+    d.attributes('-topmost', True)
+    d.configure(bg="#f8f9fa")
+    
+    W, H, M = 520, 170, 16
+    d.geometry(f"{W}x{H}+{M}+{sh-H-M-48}")
+    
+    f = tk.Frame(d, bg="#f8f9fa")
+    f.pack(fill=tk.BOTH, expand=True, padx=14, pady=10)
+    
+    b = tk.Frame(f, bg="#f8f9fa", height=34)
+    b.pack(fill=tk.X, side=tk.BOTTOM, pady=(8, 0))
+    b.pack_propagate(False)
+    c = tk.Frame(b, bg="#f8f9fa")
+    c.pack(side=tk.RIGHT)
+    
+    def btn(p, t, bg, h, fg, cmd, bold=False):
+        x = tk.Label(
+                p, text=t, 
+                font=("TkDefaultFont", 9, "bold" if bold else "normal"),
+                bg=bg, fg=fg, padx=12, pady=3, cursor="hand2")
+        x.pack(side=tk.LEFT, padx=(0, 6))
+        x.bind("<Enter>", lambda e: x.config(bg=h))
+        x.bind("<Leave>", lambda e: x.config(bg=bg))
+        x.bind("<Button-1>", lambda e: cmd())
+        return x
+    
+    def no(): 
         confirmed[0] = False
-        dialog.destroy()
+        d.destroy()
         root.destroy()
-
-    dialog.protocol("WM_DELETE_WINDOW", on_cancel)
-
-    btn_confirm = ttk.Button(btn_frame, text="Potwierdzam", command=on_confirm)
-    btn_confirm.pack(side=tk.LEFT, padx=(0, 6))
-
-    btn_cancel = ttk.Button(btn_frame, text="Anuluj", command=on_cancel)
-    btn_cancel.pack(side=tk.LEFT)
-
-    btn_confirm.focus_set()
-    dialog.bind('<Return>', lambda e: on_confirm())
-    dialog.bind('<Escape>', lambda e: on_cancel())
-
+    
+    def yes(): 
+        confirmed[0] = True
+        d.destroy()
+        root.destroy()
+    
+    btn(c, "Anuluj", "#e9ecef", "#dee2e6", "#212529", no)
+    btn(c, "Potwierdzam", "#0d6efd", "#0b5ed7", "white", yes, bold=True).focus_set()  # noqa
+    
+    m = tk.Frame(f, bg="#f8f9fa")
+    m.pack(fill=tk.BOTH, expand=True)
+    tk.Label(
+        m, text="📝", 
+        font=("TkDefaultFont", 24), 
+        bg="#f8f9fa").pack(side=tk.LEFT, padx=(0, 8))
+    t = tk.Frame(m, bg="#f8f9fa")
+    t.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+    tk.Label(
+        t, text="Potwierdź zapisanie zapisanie zmian w pliku", 
+        font=("TkDefaultFont", 10, "bold"),
+        bg="#f8f9fa", fg="#212529", wraplength=400,
+        anchor=tk.CENTER, justify=tk.CENTER).pack(expand=True)
+    
+    d.protocol("WM_DELETE_WINDOW", no)
+    d.bind('<Return>', lambda e: yes())
+    d.bind('<Escape>', lambda e: no())
+    d.update_idletasks()
+    d.grab_set()
+    d.focus_set()
     root.mainloop()
-
     return confirmed[0]
 
 
