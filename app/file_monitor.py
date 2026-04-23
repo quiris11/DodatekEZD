@@ -134,8 +134,12 @@ def _show_confirmation_dialog(filepath=""):
     W = max(d.winfo_reqwidth(), 340)
     H = d.winfo_reqheight()
 
-    MARGIN_X = 0   # ↑ increase to move RIGHT
-    MARGIN_Y = 32   # ↓ decrease to move DOWN (smaller = lower on screen)
+    if sys.platform == "darwin":
+        MARGIN_X = 0   # ↑ increase to move RIGHT
+        MARGIN_Y = 32   # ↓ decrease to move DOWN (smaller = lower on screen)
+    else:
+        MARGIN_X = 0
+        MARGIN_Y = 0
     
     vf = _visible_frame() if sys.platform == "darwin" else None
     if vf:
