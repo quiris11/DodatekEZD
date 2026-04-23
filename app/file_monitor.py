@@ -3,6 +3,8 @@ import platform
 import os
 import hashlib
 import tkinter as tk
+import json
+import sys
 
 
 READONLY_EXTENSIONS = ('.eml', '.msg', '.pdf')
@@ -14,6 +16,24 @@ __all__ = [
 ]
 
 __version__ = '1.3.0'
+
+
+def _visible_frame():
+    """Returns {'x', 'bottom', 'w', 'h'} of usable screen area via JXA."""
+    script = '''ObjC.import('AppKit');
+var s = $.NSScreen.mainScreen;
+var v = s.visibleFrame;
+var f = s.frame;
+JSON.stringify({x:v.origin.x,y:v.origin.y,w:v.size.width,h:v.size.height,fh:f.size.height});'''  # noqa
+    try:
+        r = subprocess.run(['osascript', '-l', 'JavaScript', '-e', script],
+                           capture_output=True, text=True, timeout=3)
+        d = json.loads(r.stdout.strip())
+        # Cocoa uses bottom-left origin; convert to Tkinter top-left
+        return {'x': d['x'], 'bottom': d['fh'] - d['y'],
+                'w': d['w'], 'h': d['h']}
+    except Exception:
+        return None
 
 
 def remove_quarantine(filepath):
@@ -113,7 +133,19 @@ def _show_confirmation_dialog(filepath=""):
     d.update_idletasks()
     W = max(d.winfo_reqwidth(), 340)
     H = d.winfo_reqheight()
-    d.geometry(f"{W}x{H}+16+{sh-H-16-48}")
+
+    MARGIN_X = 0   # ↑ increase to move RIGHT
+    MARGIN_Y = 32   # ↓ decrease to move DOWN (smaller = lower on screen)
+    
+    vf = _visible_frame() if sys.platform == "darwin" else None
+    if vf:
+        x = vf['x'] + MARGIN_X
+        y = vf['bottom'] - H - MARGIN_Y
+    else:
+        x, y = MARGIN_X, sh - H - MARGIN_Y - 48
+    
+    d.geometry(f"{W}x{H}+{int(x)}+{int(y)}")
+
     d.minsize(W, H)
     d.grab_set()
     d.focus_set()
