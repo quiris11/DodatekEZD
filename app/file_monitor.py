@@ -114,7 +114,7 @@ def _show_confirmation_dialog(filepath=""):
     d.bind('<Escape>', lambda e: no())
 
     d.update_idletasks()
-    W = max(d.winfo_reqwidth(), 340)
+    W = d.winfo_reqwidth() 
     H = d.winfo_reqheight()
     if sys.platform == "darwin":
         MARGIN_X = 0
@@ -133,6 +133,7 @@ def _show_confirmation_dialog(filepath=""):
     d.geometry(f"{W}x{H}+{int(x)}+{int(y)}")
     d.minsize(W, H)
     d.grab_set()
+    d.focus_force()
     confirm_btn.focus_set()
 
     root.mainloop()
