@@ -86,9 +86,12 @@ def release_single_instance_lock():
 
 class CustomAskString(simpledialog._QueryString):
     def body(self, master):
+        self.attributes('-topmost', True)
+        self.lift()
+        self.focus_force()
         super().body(master)
         self.bind('<Return>', self.ok)
-        self.bind('<KP_Enter>', self.ok)  # Also bind keypad Enter
+        self.bind('<KP_Enter>', self.ok)
         return self.entry
 
 
@@ -98,8 +101,8 @@ def get_pin():
     root.attributes('-topmost', True)
 
     dialog = CustomAskString(
-        "EZD Smart Card PIN",
-        "Enter PIN:",
+        "DodatekEZD",
+        "Wprowadź PIN:",
         show='*',
         parent=root
     )
