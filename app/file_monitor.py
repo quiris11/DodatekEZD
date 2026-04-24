@@ -75,85 +75,66 @@ def _show_confirmation_dialog(filepath=""):
     root.withdraw()
     root.update_idletasks()
     sh = root.winfo_screenheight()
-    
+
     d = tk.Toplevel(root)
     d.title("DodatekEZD")
     d.resizable(False, False)
     d.attributes('-topmost', True)
-    d.configure(bg="#f8f9fa")
-    
-    f = tk.Frame(d, bg="#f8f9fa")
+
+    f = tk.Frame(d)
     f.pack(fill=tk.BOTH, expand=True, padx=14, pady=10)
-    
-    b = tk.Frame(f, bg="#f8f9fa")
+
+    b = tk.Frame(f)
     b.pack(fill=tk.X, side=tk.BOTTOM, pady=(10, 0))
-    c = tk.Frame(b, bg="#f8f9fa")
-    c.pack(side=tk.RIGHT)
-    
-    def btn(p, t, bg, h, fg, cmd, bold=False):
-        x = tk.Label(
-            p, text=t, 
-            font=("TkDefaultFont", 9, "bold" if bold else "normal"),
-            bg=bg, fg=fg, padx=12, pady=4, cursor="hand2")
-        x.pack(side=tk.LEFT, padx=(0, 6))
-        x.bind("<Enter>", lambda e: x.config(bg=h))
-        x.bind("<Leave>", lambda e: x.config(bg=bg))
-        x.bind("<Button-1>", lambda e: cmd())
-        return x
-    
-    def no(): 
+    c = tk.Frame(b)
+    c.pack(anchor=tk.CENTER)
+
+    def no():
         confirmed[0] = False
         d.destroy()
         root.destroy()
-    
+
     def yes():
         confirmed[0] = True
         d.destroy()
         root.destroy()
-    
-    btn(c, "Anuluj", "#e9ecef", "#dee2e6", "#212529", no)
-    btn(c, "Potwierdzam", "#0d6efd", "#0b5ed7", "white", yes, bold=True).focus_set()
-    
-    m = tk.Frame(f, bg="#f8f9fa")
+
+    tk.Button(c, text="Anuluj", command=no).pack(side=tk.LEFT, padx=(0, 6))
+    confirm_btn = tk.Button(c, text="Potwierdzam", command=yes)
+    confirm_btn.pack(side=tk.LEFT, padx=(0, 6))
+
+    m = tk.Frame(f)
     m.pack(fill=tk.BOTH, expand=True)
-    tk.Label(
-        m, text="📝", font=("TkDefaultFont", 24), 
-        bg="#f8f9fa").pack(side=tk.LEFT, padx=(0, 10))
-    t = tk.Frame(m, bg="#f8f9fa")
-    t.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-    tk.Label(t, text="Potwierdź zapisanie zmian w pliku", 
-             font=("TkDefaultFont", 10, "bold"),
-             bg="#f8f9fa", fg="#212529", wraplength=360,
-             anchor=tk.CENTER, justify=tk.CENTER).pack(expand=True)
-    
+    tk.Label(m, text="Potwierdź zapisanie zmian w pliku",
+             wraplength=360, anchor=tk.CENTER,
+             justify=tk.CENTER).pack(expand=True)
+
     d.protocol("WM_DELETE_WINDOW", no)
     d.bind('<Return>', lambda e: yes())
     d.bind('<Escape>', lambda e: no())
-    
+
     d.update_idletasks()
     W = max(d.winfo_reqwidth(), 340)
     H = d.winfo_reqheight()
-
     if sys.platform == "darwin":
-        MARGIN_X = 0   # ↑ increase to move RIGHT
-        MARGIN_Y = 32   # ↓ decrease to move DOWN (smaller = lower on screen)
+        MARGIN_X = 0
+        MARGIN_Y = 32
     else:
         MARGIN_X = 0
         MARGIN_Y = 0
-    
+
     vf = _visible_frame() if sys.platform == "darwin" else None
     if vf:
         x = vf['x'] + MARGIN_X
         y = vf['bottom'] - H - MARGIN_Y
     else:
         x, y = MARGIN_X, sh - H - MARGIN_Y - 48
-    
-    d.geometry(f"{W}x{H}+{int(x)}+{int(y)}")
 
+    d.geometry(f"{W}x{H}+{int(x)}+{int(y)}")
     d.minsize(W, H)
     d.grab_set()
-    d.focus_set()
-    
+    confirm_btn.focus_set()
+
     root.mainloop()
     return confirmed[0]
 
