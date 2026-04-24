@@ -100,7 +100,8 @@ def _show_confirmation_dialog(filepath=""):
         root.destroy()
 
     tk.Button(c, text="Anuluj", command=no).pack(side=tk.LEFT, padx=(0, 6))
-    confirm_btn = tk.Button(c, text="Potwierdzam", command=yes)
+    confirm_btn = tk.Button(
+        c, text="Potwierdzam", command=yes, default=tk.ACTIVE)
     confirm_btn.pack(side=tk.LEFT, padx=(0, 6))
 
     m = tk.Frame(f)
