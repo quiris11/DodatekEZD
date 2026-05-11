@@ -360,10 +360,13 @@ def pick_signature_rect(pdf_path: str, page_index: int = 0):
     canvas = tk.Canvas(win, width=canvas_w, height=canvas_h,
                        cursor="crosshair")
     canvas.pack(padx=8, pady=8)
-    img_item = canvas.create_image(0, 0, anchor="nw", image=photos[current_page[0]])
+    img_item = canvas.create_image(
+        0, 0, anchor="nw", image=photos[current_page[0]])
 
     def refresh_page():
-        """Redraw the canvas with the current page image; clear any drawn rect."""
+        """
+        Redraw the canvas with the current page image; clear any drawn rect.
+        """
         canvas.itemconfig(img_item, image=photos[current_page[0]])
         pix = page_pixmaps[current_page[0]]
         canvas.config(width=pix.width, height=pix.height)
@@ -438,20 +441,30 @@ def pick_signature_rect(pdf_path: str, page_index: int = 0):
         x0, y0 = start[0], start[1]
         x1, y1 = max(e.x, x0 + 1), max(e.y, y0 + 1)
 
-        # Enforce minimum — redraw snapped rectangle so user sees actual size
         x0, y0, x1, y1 = enforce_minimum(x0, y0, x1, y1)
         draw_rect(x0, y0, x1, y1)
 
         ox, oy, w, h = px_to_dss(x0, y0, x1, y1)
         confirmed_page = current_page[0]
 
-        def confirm():
-            result[0] = (ox, oy, w, h, confirmed_page + 1)
-            win.destroy()
+        # Check whether the drawn rectangle overlaps any existing text
+        check_doc = fitz.open(pdf_path)
+        clip = fitz.Rect(ox, oy, ox + w, oy + h)
+        has_text = bool(check_doc[confirmed_page].get_text(
+            "text", clip=clip).strip())
+        check_doc.close()
 
-        btn_ok.config(state="normal", command=confirm)
-        status.set(
-            f"✓   x={ox}   y={oy}   w={w}   h={h} pt  —  potwierdź lub zmień")
+        if has_text:
+            status.set("Nie można zakrywać istniejącego tekstu!")
+            btn_ok.config(state="disabled")
+        else:
+            status.set("") 
+            
+            def confirm():
+                result[0] = (ox, oy, w, h, confirmed_page + 1)
+                win.destroy()
+
+            btn_ok.config(state="normal", command=confirm)
 
     canvas.bind("<ButtonPress-1>",   on_press)
     canvas.bind("<B1-Motion>",       on_drag)
