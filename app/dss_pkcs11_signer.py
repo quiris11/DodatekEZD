@@ -302,10 +302,19 @@ MIN_H_PT = 70
 
 
 def pick_signature_rect(pdf_path: str, page_index: int = 0):
-    SCALE = 1.5
-
     doc = fitz.open(pdf_path)
     total_pages = doc.page_count
+
+    # Compute SCALE so the tallest/widest page fits within the screen.
+    # A hidden root is created early solely to read screen dimensions.
+    win = tk.Tk()
+    win.withdraw()
+    _UI_OVERHEAD = 160  # title bar + nav row + status label + buttons + padding
+    _max_pt_h = max(doc[i].rect.height for i in range(total_pages))
+    _max_pt_w = max(doc[i].rect.width  for i in range(total_pages))
+    SCALE = min(1.5,
+                (win.winfo_screenheight() - _UI_OVERHEAD) / _max_pt_h,
+                (win.winfo_screenwidth()  - 32)           / _max_pt_w)
 
     # Pre-render all pages as PhotoImage-ready PNG bytes
     page_pixmaps = []
@@ -347,8 +356,8 @@ def pick_signature_rect(pdf_path: str, page_index: int = 0):
         return x0, y0, x1, y1
 
     # --- Window ---
-    win = tk.Tk()
     win.title("Wskaż miejsce wizualizacji podpisu i potwierdź")
+    win.deiconify()
     win.resizable(False, False)
 
     # Cache PhotoImage objects (must be kept alive to avoid GC)
