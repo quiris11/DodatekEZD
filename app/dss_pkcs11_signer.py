@@ -309,12 +309,12 @@ def pick_signature_rect(pdf_path: str, page_index: int = 0):
     # A hidden root is created early solely to read screen dimensions.
     win = tk.Tk()
     win.withdraw()
-    _UI_OVERHEAD = 160  # title bar + nav row + status label + buttons + padding
+    _UI_OVERHEAD = 220  # title bar + nav row + status label + buttons + padd.
     _max_pt_h = max(doc[i].rect.height for i in range(total_pages))
-    _max_pt_w = max(doc[i].rect.width  for i in range(total_pages))
+    _max_pt_w = max(doc[i].rect.width for i in range(total_pages))
     SCALE = min(1.5,
                 (win.winfo_screenheight() - _UI_OVERHEAD) / _max_pt_h,
-                (win.winfo_screenwidth()  - 32)           / _max_pt_w)
+                (win.winfo_screenwidth() - 32) / _max_pt_w)
 
     # Pre-render all pages as PhotoImage-ready PNG bytes
     page_pixmaps = []
