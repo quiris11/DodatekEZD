@@ -155,7 +155,7 @@ def remove_empty_rels_files(docx_path):
 
 
 def dss_sign(file_path, signature_type='xades', packaging='ENVELOPED',
-             level='B', pin=None):
+             level='B', pin=None, image_parameters=None):
     """Sign a document using PKCS#11 via x86 Python or x64 on Linux"""
 
     PKCS11_ARM64 = True
@@ -174,6 +174,7 @@ def dss_sign(file_path, signature_type='xades', packaging='ENVELOPED',
             signature_level,
             packaging,
             pin,
+            image_parameters,
         )
 
     else:
@@ -482,7 +483,7 @@ def sign_file(authToken, proxyHost, pin, sig_folder):
     print(f"Tryb podpisu: {tryb}")
     timeStamp = response['header']['IncludeTimestampFromTSA']
 
-    if tryb == 6:
+    if tryb == 6 or tryb == 9:
         # PAdES format
         file_data = response['body']['FileByteStream']
         file_name = fileInfo['body']['DokumentNazwa'] + '.pdf'
@@ -499,10 +500,29 @@ def sign_file(authToken, proxyHost, pin, sig_folder):
             with open(output_file, 'wb') as file:
                 file.write(byte_stream)
 
+        # Build visual stamp
+        image_parameters = None
+        if tryb == 9:
+            from dss_pkcs11_signer import (
+                pick_signature_rect,
+                build_pades_image_parameters,
+            )
+            coords = pick_signature_rect(output_file)
+            if coords is None:
+                messagebox.showinfo('DodatekEZD', 'Podpisywanie anulowane.')
+                return
+            origin_x, origin_y, width, height, page = coords
+            image_parameters = build_pades_image_parameters(
+                origin_x=origin_x, origin_y=origin_y,
+                width=width, height=height, page=page,
+            )
+
         if timeStamp:
-            dss_sign(output_file, 'pades', 'ENVELOPED', 'T', pin)
+            dss_sign(output_file, 'pades', 'ENVELOPED', 'T', pin,
+                     image_parameters)
         else:
-            dss_sign(output_file, 'pades', 'ENVELOPED', 'B', pin)
+            dss_sign(output_file, 'pades', 'ENVELOPED', 'B', pin,
+                     image_parameters)
 
         with open(output_file, "rb") as file:
             file_data = file.read()
